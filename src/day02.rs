@@ -67,6 +67,17 @@ impl Outcome {
     }
 }
 
+impl From<char> for Outcome {
+    fn from(value: char) -> Self {
+        match value {
+            'X' => Self::Loss,
+            'Y' => Self::Draw,
+            'Z' => Self::Win,
+            _ => panic!("given char `{}` is not defined for `Play` variants", value),
+        }
+    }
+}
+
 impl From<Outcome> for Score {
     fn from(value: Outcome) -> Self {
         match value {
@@ -77,6 +88,22 @@ impl From<Outcome> for Score {
     }
 }
 
+/// Returns the `Play` that the player is supposed to play.
+fn play_from_outcome(oponent: Play, outcome: Outcome) -> Play {
+    use Play::*;
+    match (oponent, outcome) {
+        (Rock, Outcome::Loss) => Scissors,
+        (Rock, Outcome::Win) => Paper,
+        (Paper, Outcome::Loss) => Rock,
+        (Paper, Outcome::Win) => Scissors,
+        (Scissors, Outcome::Loss) => Paper,
+        (Scissors, Outcome::Win) => Rock,
+        (Rock, Outcome::Draw) => Rock,
+        (Paper, Outcome::Draw) => Paper,
+        (Scissors, Outcome::Draw) => Scissors,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use itertools::Itertools;
@@ -84,6 +111,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[ignore = "done"]
     fn test_one_star() {
         let input = include_str!("../input/day02.txt");
         // let input = "A Y
@@ -101,11 +129,27 @@ mod tests {
             .map(|x| {
                 let (oponent, me) = x.collect_tuple().unwrap();
                 let outcome = Outcome::new(oponent, me);
-                // dbg!(
-                //     Score::from(me),
-                //     Score::from(outcome),
-                //     Score::from(me) + Score::from(outcome)
-                // );
+                Score::from(me) + Score::from(outcome)
+            })
+            .sum::<Score>();
+        println!("Answer: {:?}", answer);
+    }
+
+    #[test]
+    fn test_two_star() {
+        let input = include_str!("../input/day02.txt");
+        // let input = "A Y
+        // B X
+        // C Z";
+        let answer = input
+            .chars()
+            .filter(|x| !x.is_whitespace())
+            .chunks(2)
+            .into_iter()
+            .map(|x| {
+                let (oponent, outcome) = x.collect_tuple().unwrap();
+                let (oponent, outcome): (Play, Outcome) = (oponent.into(), outcome.into());
+                let me = play_from_outcome(oponent, outcome);
                 Score::from(me) + Score::from(outcome)
             })
             .sum::<Score>();
