@@ -1,11 +1,12 @@
+
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
+    #[ignore = "done"]
     fn test_one_star() {
         let input = include_str!("../input/day01.txt");
-
+        
         let mut current = 0;
         //FIXME: actually maximum should not be zero.. but it works anyways..
         let mut maximum: u32 = 0;
@@ -28,6 +29,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "done"]
     fn test_two_star() {
         let input = include_str!("../input/day01.txt");
         let mut current = 0;
@@ -57,7 +59,9 @@ mod tests {
         println!("Sum: {:?}", maximum.into_iter().sum::<u32>());
         // ANSWER: 71471
     }
+    
     #[test]
+    #[ignore = "done"]
     fn test_two_star_slow() {
         let input = include_str!("../input/day01.txt");
         let mut all_calories = input.lines().fold(Vec::new(), |mut acc, x| {
