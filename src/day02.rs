@@ -1,3 +1,5 @@
+use anyhow::{anyhow, Error, Result};
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Play {
     Rock,
@@ -5,13 +7,17 @@ enum Play {
     Scissors,
 }
 
-impl From<char> for Play {
-    fn from(value: char) -> Self {
+impl TryFrom<char> for Play {
+    type Error = Error;
+    fn try_from(value: char) -> Result<Self> {
         match value {
-            'A' | 'X' => Self::Rock,
-            'B' | 'Y' => Self::Paper,
-            'C' | 'Z' => Self::Scissors,
-            _ => panic!("given char `{}` is not defined for `Play` variants", value),
+            'A' | 'X' => Ok(Self::Rock),
+            'B' | 'Y' => Ok(Self::Paper),
+            'C' | 'Z' => Ok(Self::Scissors),
+            _ => Err(anyhow!(
+                "given char `{}` is not defined for `Play` variants",
+                value
+            )),
         }
     }
 }
@@ -22,7 +28,7 @@ struct Score(u32);
 // can be done through `derive_more`.
 impl std::iter::Sum for Score {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Score(0), std::ops::Add::add)
+        iter.fold(Score::default(), std::ops::Add::add)
     }
 }
 
@@ -67,13 +73,17 @@ impl Outcome {
     }
 }
 
-impl From<char> for Outcome {
-    fn from(value: char) -> Self {
+impl TryFrom<char> for Outcome {
+    type Error = Error;
+    fn try_from(value: char) -> Result<Self> {
         match value {
-            'X' => Self::Loss,
-            'Y' => Self::Draw,
-            'Z' => Self::Win,
-            _ => panic!("given char `{}` is not defined for `Play` variants", value),
+            'X' => Ok(Self::Loss),
+            'Y' => Ok(Self::Draw),
+            'Z' => Ok(Self::Win),
+            _ => Err(anyhow!(
+                "given char `{}` is not defined for `Play` variants",
+                value
+            )),
         }
     }
 }
@@ -98,6 +108,7 @@ fn play_from_outcome(oponent: Play, outcome: Outcome) -> Play {
         (Paper, Outcome::Win) => Scissors,
         (Scissors, Outcome::Loss) => Paper,
         (Scissors, Outcome::Win) => Rock,
+        //FIXME: better way to phrase this?
         (Rock, Outcome::Draw) => Rock,
         (Paper, Outcome::Draw) => Paper,
         (Scissors, Outcome::Draw) => Scissors,
@@ -106,9 +117,8 @@ fn play_from_outcome(oponent: Play, outcome: Outcome) -> Play {
 
 #[cfg(test)]
 mod tests {
-    use itertools::Itertools;
-
     use super::*;
+    use itertools::Itertools;
 
     #[test]
     #[ignore = "done"]
@@ -122,7 +132,7 @@ mod tests {
             .flat_map(|x| match x {
                 ' ' => None,
                 '\n' => None,
-                x => Some(Play::from(x)),
+                x => Some(Play::try_from(x).unwrap()),
             })
             .chunks(2)
             .into_iter()
@@ -148,7 +158,8 @@ mod tests {
             .into_iter()
             .map(|x| {
                 let (oponent, outcome) = x.collect_tuple().unwrap();
-                let (oponent, outcome): (Play, Outcome) = (oponent.into(), outcome.into());
+                let (oponent, outcome): (Play, Outcome) =
+                    (oponent.try_into().unwrap(), outcome.try_into().unwrap());
                 let me = play_from_outcome(oponent, outcome);
                 Score::from(me) + Score::from(outcome)
             })
