@@ -1,12 +1,8 @@
 
-#[cfg(test)]
-mod tests {
+mod solutions {
+    pub(crate) fn one_star() {
+        let input = include_str!("../../input/day01.txt");
 
-    #[test]
-    #[ignore = "done"]
-    fn test_one_star() {
-        let input = include_str!("../input/day01.txt");
-        
         let mut current = 0;
         //FIXME: actually maximum should not be zero.. but it works anyways..
         let mut maximum: u32 = 0;
@@ -28,10 +24,11 @@ mod tests {
         // ANSWER: 71471
     }
 
-    #[test]
-    #[ignore = "done"]
-    fn test_two_star() {
-        let input = include_str!("../input/day01.txt");
+    /// Doesn't work as it is maintaining a list of top three throughout, which
+    /// doesn't work. You need to sort everybody.
+    #[allow(dead_code)]
+    pub(crate) fn two_star() {
+        let input = include_str!("../../input/day01.txt");
         let mut current = 0;
         //FIXME: actually maximum should not be zero.. but it works anyways..
         let mut maximum = [0_u32; 3];
@@ -59,11 +56,9 @@ mod tests {
         println!("Sum: {:?}", maximum.into_iter().sum::<u32>());
         // ANSWER: 71471
     }
-    
-    #[test]
-    #[ignore = "done"]
-    fn test_two_star_slow() {
-        let input = include_str!("../input/day01.txt");
+
+    pub(crate) fn two_star_slow() {
+        let input = include_str!("../../input/day01.txt");
         let mut all_calories = input.lines().fold(Vec::new(), |mut acc, x| {
             match x {
                 "" => acc.push(0),
@@ -81,4 +76,9 @@ mod tests {
         println!("Top 3: {:?}", &all_calories[0..3]);
         println!("Answer: {}", answer);
     }
+}
+
+fn main() {
+    solutions::one_star();
+    solutions::two_star_slow();
 }

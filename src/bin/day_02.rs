@@ -60,12 +60,12 @@ enum Outcome {
 impl Outcome {
     pub fn new(oponent: Play, me: Play) -> Self {
         match (oponent, me) {
-            (Play::Rock, Play::Paper) => Outcome::Win,
-            (Play::Paper, Play::Rock) => Outcome::Loss,
-            (Play::Scissors, Play::Rock) => Outcome::Win,
-            (Play::Rock, Play::Scissors) => Outcome::Loss,
-            (Play::Paper, Play::Scissors) => Outcome::Win,
-            (Play::Scissors, Play::Paper) => Outcome::Loss,
+            (Play::Rock, Play::Paper)
+            | (Play::Scissors, Play::Rock)
+            | (Play::Paper, Play::Scissors) => Outcome::Win,
+            (Play::Paper, Play::Rock)
+            | (Play::Rock, Play::Scissors)
+            | (Play::Scissors, Play::Paper) => Outcome::Loss,
             (Play::Rock, Play::Rock)
             | (Play::Paper, Play::Paper)
             | (Play::Scissors, Play::Scissors) => Outcome::Draw,
@@ -103,27 +103,24 @@ fn play_from_outcome(oponent: Play, outcome: Outcome) -> Play {
     use Play::*;
     match (oponent, outcome) {
         (Rock, Outcome::Loss) => Scissors,
-        (Rock, Outcome::Win) => Paper,
-        (Paper, Outcome::Loss) => Rock,
         (Paper, Outcome::Win) => Scissors,
-        (Scissors, Outcome::Loss) => Paper,
-        (Scissors, Outcome::Win) => Rock,
-        //FIXME: better way to phrase this?
-        (Rock, Outcome::Draw) => Rock,
-        (Paper, Outcome::Draw) => Paper,
         (Scissors, Outcome::Draw) => Scissors,
+        (Rock, Outcome::Win) => Paper,
+        (Scissors, Outcome::Loss) => Paper,
+        (Paper, Outcome::Draw) => Paper,
+        (Paper, Outcome::Loss) => Rock,
+        (Scissors, Outcome::Win) => Rock,
+        (Rock, Outcome::Draw) => Rock,
+        //FIXME: better way to phrase this?
     }
 }
 
-#[cfg(test)]
-mod tests {
+mod solutions {
     use super::*;
     use itertools::Itertools;
 
-    #[test]
-    #[ignore = "done"]
-    fn test_one_star() {
-        let input = include_str!("../input/day02.txt");
+    pub(crate) fn one_star() {
+        let input = include_str!("../../input/day02.txt");
         // let input = "A Y
         // B X
         // C Z";
@@ -145,9 +142,8 @@ mod tests {
         println!("Answer: {:?}", answer);
     }
 
-    #[test]
-    fn test_two_star() {
-        let input = include_str!("../input/day02.txt");
+    pub(crate) fn two_star() {
+        let input = include_str!("../../input/day02.txt");
         // let input = "A Y
         // B X
         // C Z";
@@ -166,4 +162,9 @@ mod tests {
             .sum::<Score>();
         println!("Answer: {:?}", answer);
     }
+}
+
+fn main() {
+    solutions::one_star();
+    solutions::two_star();
 }
