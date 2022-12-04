@@ -19,9 +19,6 @@ fn two_star() {
         // .inspect(|xy| println!("{:?}", xy))
         .fold(0, |acc, abxy| {
             let (a, b, x, y) = abxy;
-            /* a-b <= x-y */
-            /* x-y <= a-b */
-            // if (x <= a && b <= y) || (a <= x && y <= b)
             if ((x <= a) & (a <= y))
                 | ((x <= b) & (b <= y))
                 | ((a <= x) & (x <= b))
