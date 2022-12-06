@@ -64,7 +64,9 @@ mod solutions {
                 "" => acc.push(0),
                 x => {
                     let x: u32 = x.parse().unwrap();
-                    acc.last_mut().map(|last| *last += x);
+                    if let Some(last) = acc.last_mut(){
+                        *last+=x;
+                    }
                 }
             }
             acc
@@ -72,7 +74,7 @@ mod solutions {
         dbg!(&all_calories[0..10]);
         all_calories.sort();
         all_calories.reverse();
-        let answer: u32 = all_calories[0..3].into_iter().sum();
+        let answer: u32 = all_calories[0..3].iter().sum();
         println!("Top 3: {:?}", &all_calories[0..3]);
         println!("Answer: {}", answer);
     }

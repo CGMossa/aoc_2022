@@ -59,7 +59,7 @@ move 1 from 1 to 2";
     let mut initial_state: Stacks = Stacks::new(stacks);
     initial_state_input.lines().for_each(|line| {
         for (id, c) in line.char_indices() {
-            if !matches!(c, 'A'..='Z') {
+            if !c.is_ascii_uppercase() {
                 continue;
             }
             let id = id / 4;
@@ -125,7 +125,7 @@ move 1 from 1 to 2";
     let mut initial_state: Stacks = Stacks::new(stacks);
     initial_state_input.lines().for_each(|line| {
         for (id, c) in line.char_indices() {
-            if !matches!(c, 'A'..='Z') {
+            if !c.is_ascii_uppercase() {
                 continue;
             }
             let id = id / 4;

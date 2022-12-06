@@ -11,8 +11,7 @@ fn two_star() {
         .lines()
         .map(|xy| -> (u32, u32, u32, u32) {
             xy.split(',')
-                .map(|xy| xy.split('-').map(|x| x.parse::<u32>().unwrap()))
-                .flatten()
+                .flat_map(|xy| xy.split('-').map(|x| x.parse::<u32>().unwrap()))
                 .collect_tuple()
                 .unwrap()
         })
@@ -39,8 +38,7 @@ fn one_star() {
         .lines()
         .map(|xy| -> (u32, u32, u32, u32) {
             xy.split(',')
-                .map(|xy| xy.split('-').map(|x| x.parse::<u32>().unwrap()))
-                .flatten()
+                .flat_map(|xy| xy.split('-').map(|x| x.parse::<u32>().unwrap()))
                 .collect_tuple()
                 .unwrap()
         })

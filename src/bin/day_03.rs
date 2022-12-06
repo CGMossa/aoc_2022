@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use itertools::Itertools;
 
 fn main() {
@@ -25,10 +23,9 @@ fn two_star() {
     let priority = inventory
         .chunks(3)
         .flat_map(|chunk| {
-            let (x, y, z) = chunk.into_iter().collect_tuple().unwrap();
-            x.into_iter()
-                .filter(|x| y.contains(x) && z.contains(x))
-                .next()
+            let (x, y, z) = chunk.iter().collect_tuple().unwrap();
+            x.iter()
+                .find(|x| y.contains(x) && z.contains(x))
                 .copied()
         })
         .map(|x| x as u8)
