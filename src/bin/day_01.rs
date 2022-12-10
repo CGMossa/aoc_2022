@@ -1,4 +1,3 @@
-
 mod solutions {
     pub(crate) fn one_star() {
         let input = include_str!("../../input/day01.txt");
@@ -64,8 +63,8 @@ mod solutions {
                 "" => acc.push(0),
                 x => {
                     let x: u32 = x.parse().unwrap();
-                    if let Some(last) = acc.last_mut(){
-                        *last+=x;
+                    if let Some(last) = acc.last_mut() {
+                        *last += x;
                     }
                 }
             }

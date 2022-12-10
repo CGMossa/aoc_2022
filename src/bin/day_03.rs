@@ -49,11 +49,7 @@ fn one_star() {
         .map(|x| x.chars().filter(|x| !x.is_whitespace()).collect_vec())
         .flat_map(|rucksack| {
             let (first, second) = rucksack.split_at(rucksack.len() / 2);
-            first
-                .iter()
-                .filter(|x| second.contains(x))
-                .copied()
-                .next()
+            first.iter().filter(|x| second.contains(x)).copied().next()
         });
     let priority = rucksacks
         // .inspect(|x| println!("{}", x))

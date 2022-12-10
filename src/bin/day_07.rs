@@ -83,11 +83,7 @@ $ ls
 }
 
 fn one_star(dir_sizes: &DirSizes) -> usize {
-    dir_sizes
-        .inner
-        .values()
-        .filter(|x| **x <= 100_000)
-        .sum()
+    dir_sizes.inner.values().filter(|x| **x <= 100_000).sum()
 }
 
 fn two_star(dir_sizes: &DirSizes) -> usize {
