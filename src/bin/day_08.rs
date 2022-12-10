@@ -24,9 +24,8 @@ fn one_star(input: &str) -> usize {
     let height_map: HashMap<(usize, usize), _> = input
         .lines()
         .enumerate()
-        .flat_map(|x|
-            // beware: this assumes input would be numbers as ascii
-            repeat(x.0).zip(x.1.bytes().map(|x| x - b'0').enumerate()))
+        // beware: this assumes input would be numbers as ascii
+        .flat_map(|x| repeat(x.0).zip(x.1.bytes().map(|x| x - b'0').enumerate()))
         .map(|x| -> ((usize, usize), u8) { ((x.0, x.1 .0), (x.1).1) })
         .collect();
 
@@ -36,34 +35,33 @@ fn one_star(input: &str) -> usize {
     let (rows, cols) = max_elements;
     let (rows, cols) = (rows + 1, cols + 1);
 
-    let mut visible: HashSet<(usize, usize)> = Default::default();
-
     // determine if each cell is visible
-    for id in (0..rows).cartesian_product(0..cols) {
-        let xs = repeat(id.0);
-        let ys = repeat(id.1);
-        let directions = vec![
-            (0..id.0).into_iter().zip(ys.clone()).collect_vec(), // up
-            (id.0 + 1..cols).into_iter().zip(ys).collect_vec(),  // down
-            xs.clone().zip((0..id.1).into_iter()).collect_vec(), // left
-            xs.zip((id.1 + 1..rows).into_iter()).collect_vec(),  // right
-        ];
+    let visible: HashSet<(usize, usize)> = (0..rows)
+        .cartesian_product(0..cols)
+        .flat_map(|id| {
+            let xs = repeat(id.0);
+            let ys = repeat(id.1);
+            let directions = vec![
+                (0..id.0).into_iter().zip(ys.clone()).collect_vec(), // up
+                (id.0 + 1..cols).into_iter().zip(ys).collect_vec(),  // down
+                xs.clone().zip((0..id.1).into_iter()).collect_vec(), // left
+                xs.zip((id.1 + 1..rows).into_iter()).collect_vec(),  // right
+            ];
 
-        let value = height_map[&id];
-        'dir: for direction in directions {
-            let is_visible =
-            //an empty direction is true
-            direction.into_iter().all(|x| {
-                    let x_value = height_map[&x];
-                    value > x_value
-                });
-            if is_visible {
-                // dbg!(id, value);
-                visible.insert(id);
-                break 'dir;
-            }
-        }
-    }
+            let value = height_map[&id];
+            directions
+                .into_iter()
+                .filter_map(|direction| {
+                    // an empty direction is true
+                    let visible = direction.iter().all(|x| {
+                        let x_value: u8 = height_map[x];
+                        value > x_value
+                    });
+                    visible.then_some(id)
+                })
+                .next()
+        })
+        .collect();
 
     visible.len()
 }
