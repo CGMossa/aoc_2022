@@ -22,12 +22,6 @@ R 2"
     println!("Answer: {}", one_star(input));
 }
 
-#[derive(Debug)]
-enum Rope {
-    Head,
-    Tail,
-}
-
 #[derive(Debug, Clone, derive_more::Display)]
 enum Direction {
     #[display(fmt = "R")]
@@ -95,6 +89,46 @@ impl Position {
             }
         }
     }
+    fn apply_instruction(&mut self, direction: Direction, steps: isize) {
+        match direction {
+            Direction::Right => {
+                // right
+                self.inner.0 += steps;
+            }
+            Direction::UpRight => {
+                // up-right
+                self.inner.0 += steps;
+                self.inner.1 += steps;
+            }
+            Direction::Up => {
+                // up
+                self.inner.1 += steps;
+            }
+            Direction::UpLeft => {
+                // up-left
+                self.inner.0 -= steps;
+                self.inner.1 += steps;
+            }
+            Direction::Left => {
+                // left
+                self.inner.0 -= steps;
+            }
+            Direction::DownLeft => {
+                // down-left
+                self.inner.0 -= steps;
+                self.inner.1 -= steps;
+            }
+            Direction::Down => {
+                // down
+                self.inner.1 -= steps;
+            }
+            Direction::DownRight => {
+                // down-right
+                self.inner.0 += steps;
+                self.inner.1 -= steps;
+            }
+        }
+    }
 }
 
 fn one_star(input: &str) -> usize {
@@ -102,7 +136,7 @@ fn one_star(input: &str) -> usize {
         .lines()
         .map(|x| {
             let (direction, steps) = x.split(' ').collect_tuple().unwrap();
-            let steps = steps.parse().unwrap();
+            let steps: isize = steps.parse().unwrap();
             let direction: Direction = match direction {
                 "U" => Direction::Up,
                 "L" => Direction::Left,
@@ -113,57 +147,84 @@ fn one_star(input: &str) -> usize {
             (direction, steps)
         })
         .collect_vec();
+    // There are parallel directions used..
 
-    let start = (0, 0);
-    let mut head: Position = start.into();
-    let mut tail: Position = start.into();
+    let start: Position = (0, 0).into();
+    let mut head: Position = start.clone().into();
+    let mut tail: Position = start.clone().into();
     let mut visited: HashSet<(isize, isize)> = Default::default();
+    visited.insert(tail.inner);
 
-    println!("== Initial State ==");
-    display_state(5, 6, start.into(), head.clone(), tail.clone());
-    println!();
+    // println!("== Initial State ==");
+    // display_state(5, 6, start.into(), head.clone(), tail.clone());
+    // println!();
+
+    let mut previous_direction = instructions[0].0.clone();
     for inst in instructions {
         let (direction, steps) = inst;
-        println!("== {direction} {steps} ==");
-        head.apply_instruction_once(direction.clone());
-        display_state(5, 6, start.into(), head.clone(), tail.clone());
-        println!();
-        for step in 0..steps {
-            if step == steps - 1 {
-                continue;
-            }
-            head.apply_instruction_once(direction.clone());
-            let angle = f64::atan2(
-                (head.inner.1 - tail.inner.1) as _,
-                (head.inner.0 - tail.inner.0) as _,
-            );
-            println!("angle = {:?}", angle);
-            display_state(5, 6, start.into(), head.clone(), tail.clone());
-            let delta_x = angle.cos();
-            let delta_y = angle.sin();
-            let delta = (
-                if delta_x.abs() <= 0.1 {
-                    0
-                } else {
-                    delta_x.signum() as _
-                },
-                if delta_y.abs() <= 0.1 {
-                    0
-                } else {
-                    delta_y.signum() as _
-                },
-            );
-            println!("delta = {:?}", delta);
-            assert!(!((delta.0 == 0) && (delta.1 == 0)));
-            tail.inner.0 += delta.0;
-            tail.inner.1 += delta.1;
 
-            println!();
+        head.apply_instruction(direction.clone(), steps);
+        // assert_ne!(steps - 1, 0);
+        let is_close = [-1, 0, 1]
+            .iter()
+            .cartesian_product([-1, 0, 1].iter())
+            .any(|x| (tail.inner.0 + x.0 == head.inner.0) && (tail.inner.1 + x.1 == head.inner.1));
+        if is_close {
+            // println!("== {direction} {steps} ==");
+            // display_state(5, 6, start.into(), head.clone(), tail.clone());
+            // println!();
+
+            previous_direction = direction.clone();
+            continue;
+        }
+        use Direction::*;
+        let diagonal = match (previous_direction, direction.clone()) {
+            (Up, Right) | (Right, Up) => Some(UpRight),
+            (Down, Left) | (Left, Down) => Some(DownLeft),
+            (Up, Left) | (Left, Up) => Some(UpLeft),
+            (Down, Right) | (Right, Down) => Some(DownRight),
+            _ => None,
+        };
+        if let Some(diagonal_direction) = diagonal {
+            // println!("diagonal: {}", diagonal_direction);
+            tail.apply_instruction_once(diagonal_direction);
             visited.insert(tail.inner);
         }
+        let steps = match direction {
+            Up | Down => (head.inner.1 - tail.inner.1).abs(),
+            Left | Right => (head.inner.0 - tail.inner.0).abs(),
+            _ => unreachable!(),
+        };
+        // tail.apply_instruction(direction.clone(), steps - 1);
+        for _step in 0..steps - 1 {
+            tail.apply_instruction_once(direction.clone());
+            visited.insert(tail.inner);
+        }
+
+        // println!("== {direction} {steps} ==");
+        // display_state(5, 6, start.into(), head.clone(), tail.clone());
+        // println!();
+
+        previous_direction = direction.clone();
     }
 
+    // display_visited(5, 6, start, visited.iter().collect_vec().as_slice());
+
     visited.len()
+}
+
+fn display_visited(rows: usize, cols: usize, start: Position, visited: &[&(isize, isize)]) {
+    let mut state = vec!['.'; rows * cols];
+    let position_to_index = |position: &(isize, isize)| {
+        let (col, row) = (position.0 as usize, position.1 as usize);
+        (rows - 1 - row) * cols + col
+    };
+    for cell in visited {
+        state[position_to_index(cell)] = '#';
+    }
+    state[position_to_index(&start.inner)] = 's';
+    let state_display: String = state.chunks(cols).map(|x| x.iter().join("")).join("\n");
+    println!("{:}", state_display);
 }
 
 fn display_state(rows: usize, cols: usize, start: Position, head: Position, tail: Position) {
