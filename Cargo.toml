@@ -8,5 +8,6 @@ edition = "2021"
 [dependencies]
 # thiserror = "1.0.37"
 anyhow = "1.0.66"
+derive_more = "0.99.17"
 # derive_more = "0.99.17"
 itertools = "0.10.5"
