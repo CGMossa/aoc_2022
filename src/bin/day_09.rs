@@ -24,31 +24,35 @@ R 2"
 
 #[derive(Debug, Clone, derive_more::Display)]
 enum Direction {
-    #[display(fmt = "R")]
+    #[display(fmt = "→")]
     Right,
-    #[display(fmt = "UR")]
+    #[display(fmt = "↗")]
     UpRight,
-    #[display(fmt = "U")]
+    #[display(fmt = "↑")]
     Up,
-    #[display(fmt = "UL")]
+    #[display(fmt = "↖")]
     UpLeft,
-    #[display(fmt = "L")]
+    #[display(fmt = "←")]
     Left,
-    #[display(fmt = "DL")]
+    #[display(fmt = "↙")]
     DownLeft,
-    #[display(fmt = "D")]
+    #[display(fmt = "↓")]
     Down,
-    #[display(fmt = "DR")]
+    #[display(fmt = "↘")]
     DownRight,
 }
 
-#[derive(Debug, Clone, derive_more::From, derive_more::Display)]
+#[derive(Debug, Clone, Copy, derive_more::Display)]
 #[display(fmt = "{:?}", "inner")]
 struct Position {
     inner: (isize, isize),
 }
 
 impl Position {
+    fn new(x: isize, y: isize) -> Self {
+        Self { inner: (x, y) }
+    }
+
     fn apply_instruction_once(&mut self, direction: Direction) {
         match direction {
             Direction::Right => {
@@ -89,53 +93,13 @@ impl Position {
             }
         }
     }
-    fn apply_instruction(&mut self, direction: Direction, steps: isize) {
-        match direction {
-            Direction::Right => {
-                // right
-                self.inner.0 += steps;
-            }
-            Direction::UpRight => {
-                // up-right
-                self.inner.0 += steps;
-                self.inner.1 += steps;
-            }
-            Direction::Up => {
-                // up
-                self.inner.1 += steps;
-            }
-            Direction::UpLeft => {
-                // up-left
-                self.inner.0 -= steps;
-                self.inner.1 += steps;
-            }
-            Direction::Left => {
-                // left
-                self.inner.0 -= steps;
-            }
-            Direction::DownLeft => {
-                // down-left
-                self.inner.0 -= steps;
-                self.inner.1 -= steps;
-            }
-            Direction::Down => {
-                // down
-                self.inner.1 -= steps;
-            }
-            Direction::DownRight => {
-                // down-right
-                self.inner.0 += steps;
-                self.inner.1 -= steps;
-            }
-        }
-    }
 }
 
 fn one_star(input: &str) -> usize {
     let instructions = input
         .lines()
         .map(|x| {
-            let (direction, steps) = x.split(' ').collect_tuple().unwrap();
+            let (direction, steps) = x.split_once(' ').unwrap();
             let steps: isize = steps.parse().unwrap();
             let direction: Direction = match direction {
                 "U" => Direction::Up,
@@ -147,68 +111,61 @@ fn one_star(input: &str) -> usize {
             (direction, steps)
         })
         .collect_vec();
-    // There are parallel directions used..
-
-    let start: Position = (0, 0).into();
-    let mut head: Position = start.clone().into();
-    let mut tail: Position = start.clone().into();
+        
+    let start = Position::new(0, 0);
+    let mut head: Position = start;
+    let mut tail: Position = start;
     let mut visited: HashSet<(isize, isize)> = Default::default();
     visited.insert(tail.inner);
 
     // println!("== Initial State ==");
-    // display_state(5, 6, start.into(), head.clone(), tail.clone());
+    // display_state(5, 6, start.clone(), head.clone(), tail.clone());
     // println!();
 
-    let mut previous_direction = instructions[0].0.clone();
-    for inst in instructions {
-        let (direction, steps) = inst;
-
-        head.apply_instruction(direction.clone(), steps);
-        // assert_ne!(steps - 1, 0);
-        let is_close = [-1, 0, 1]
-            .iter()
-            .cartesian_product([-1, 0, 1].iter())
-            .any(|x| (tail.inner.0 + x.0 == head.inner.0) && (tail.inner.1 + x.1 == head.inner.1));
-        if is_close {
-            // println!("== {direction} {steps} ==");
-            // display_state(5, 6, start.into(), head.clone(), tail.clone());
-            // println!();
-
-            previous_direction = direction.clone();
-            continue;
-        }
-        use Direction::*;
-        let diagonal = match (previous_direction, direction.clone()) {
-            (Up, Right) | (Right, Up) => Some(UpRight),
-            (Down, Left) | (Left, Down) => Some(DownLeft),
-            (Up, Left) | (Left, Up) => Some(UpLeft),
-            (Down, Right) | (Right, Down) => Some(DownRight),
-            _ => None,
-        };
-        if let Some(diagonal_direction) = diagonal {
-            // println!("diagonal: {}", diagonal_direction);
-            tail.apply_instruction_once(diagonal_direction);
-            visited.insert(tail.inner);
-        }
-        let steps = match direction {
-            Up | Down => (head.inner.1 - tail.inner.1).abs(),
-            Left | Right => (head.inner.0 - tail.inner.0).abs(),
-            _ => unreachable!(),
-        };
-        // tail.apply_instruction(direction.clone(), steps - 1);
-        for _step in 0..steps - 1 {
-            tail.apply_instruction_once(direction.clone());
-            visited.insert(tail.inner);
-        }
-
+    for (direction, steps) in instructions {
         // println!("== {direction} {steps} ==");
-        // display_state(5, 6, start.into(), head.clone(), tail.clone());
-        // println!();
+        for _step in 0..steps {
+            head.apply_instruction_once(direction.clone());
+            let is_adjacent = [-1, 0, 1]
+                .iter()
+                .cartesian_product([-1, 0, 1].iter())
+                .any(|x| {
+                    (tail.inner.0 + x.0 == head.inner.0) && (tail.inner.1 + x.1 == head.inner.1)
+                });
+            if is_adjacent {
+                // // println!("== {direction} {steps} ==");
+                // println!("skipping");
+                // display_state(5, 6, start.clone(), head.clone(), tail.clone());
+                // println!();
+                continue;
+            }
+            let direct = (head.inner.0 - tail.inner.0, head.inner.1 - tail.inner.1);
+            let delta = (direct.0.signum(), direct.1.signum());
+            tail.inner.0 += delta.0;
+            tail.inner.1 += delta.1;
+            visited.insert(tail.inner);
 
-        previous_direction = direction.clone();
+            // check if the head and tail are adjacent after the update
+            assert!([-1, 0, 1]
+                .iter()
+                .cartesian_product([-1, 0, 1].iter())
+                .any(|x| {
+                    (tail.inner.0 + x.0 == head.inner.0) && (tail.inner.1 + x.1 == head.inner.1)
+                }));
+        }
+        // // println!("== {direction} {steps} ==");
+        // display_state(5, 6, start.clone(), head.clone(), tail.clone());
+        // println!();
     }
 
     // display_visited(5, 6, start, visited.iter().collect_vec().as_slice());
+
+    // dbg!(
+    //     visited.iter().max_by_key(|x| -x.0),
+    //     visited.iter().max_by_key(|x| x.0),
+    //     visited.iter().max_by_key(|x| -x.1),
+    //     visited.iter().max_by_key(|x| x.1)
+    // );
 
     visited.len()
 }
@@ -229,8 +186,11 @@ fn display_visited(rows: usize, cols: usize, start: Position, visited: &[&(isize
 
 fn display_state(rows: usize, cols: usize, start: Position, head: Position, tail: Position) {
     let mut state = vec!['.'; rows * cols];
+    dbg!(rows * cols);
     let position_to_index = |position: Position| {
         let (col, row) = (position.inner.0 as usize, position.inner.1 as usize);
+        dbg!(col, row);
+        dbg!((rows - 1 - row) * cols + col);
         (rows - 1 - row) * cols + col
     };
     println!("head: {}, tail: {}", head.clone(), tail.clone());
