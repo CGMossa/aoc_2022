@@ -111,7 +111,7 @@ fn one_star(input: &str) -> usize {
             (direction, steps)
         })
         .collect_vec();
-        
+
     let start = Position::new(0, 0);
     let mut head: Position = start;
     let mut tail: Position = start;
