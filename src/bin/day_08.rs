@@ -18,16 +18,16 @@ fn main() {
     );
     let input = include_str!("../../input/day_08.txt");
     println!("Answer: {}", one_star(input));
-//     println!(
-//         "Answer (example): {}",
-//         two_star(
-//             "30373
-// 25512
-// 65332
-// 33549
-// 35390"
-//         )
-//     );
+    //     println!(
+    //         "Answer (example): {}",
+    //         two_star(
+    //             "30373
+    // 25512
+    // 65332
+    // 33549
+    // 35390"
+    //         )
+    //     );
     println!("Answer: {}", two_star(input));
 }
 

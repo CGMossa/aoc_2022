@@ -6,6 +6,7 @@ fn main() {
 }
 
 fn two_star() {
+    #[allow(unused_variables)]
     let input = "vJrwpWtwJgWrhcsFMMfFFhFp
     jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
     PmmdzqPrVvPwwTWBwg
@@ -37,6 +38,7 @@ fn two_star() {
 }
 
 fn one_star() {
+    #[allow(unused_variables)]
     let input = "vJrwpWtwJgWrhcsFMMfFFhFp
     jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
     PmmdzqPrVvPwwTWBwg

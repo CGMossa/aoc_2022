@@ -22,21 +22,13 @@ struct MoveInstruction {
     to: usize,
 }
 
-impl MoveInstruction {
-    fn new(count: usize, from: usize, to: usize) -> Self {
-        assert_ne!(from, to, "cannot move from the same compartment to itself");
-        assert!(count > 0, "instruction states to move 0 items; redundant");
-
-        Self { count, from, to }
-    }
-}
-
 fn main() {
     one_star();
     two_star();
 }
 
 fn one_star() {
+    #[allow(unused_variables)]
     let input = "    [D]    
 [N] [C]    
 [Z] [M] [P]
@@ -103,6 +95,7 @@ move 1 from 1 to 2";
 }
 
 fn two_star() {
+    #[allow(unused_variables)]
     let input = "    [D]    
 [N] [C]    
 [Z] [M] [P]
